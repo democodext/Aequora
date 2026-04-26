@@ -2,6 +2,7 @@ services:
   - type: web
     name: fairlens-api
     env: python
+    rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
     envVars:
