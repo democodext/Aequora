@@ -15,6 +15,33 @@ import re
 app = Flask(__name__)
 CORS(app)
 app.config["MAX_CONTENT_LENGTH"] = 200 * 1024 * 1024
+MAX_UPLOAD_SIZE_BYTES = app.config["MAX_CONTENT_LENGTH"]
+
+
+def max_upload_size_mb():
+    return int(MAX_UPLOAD_SIZE_BYTES / (1024 * 1024))
+
+
+def validate_uploaded_file(file):
+    if file is None:
+        return "No file uploaded"
+    filename = (file.filename or "").strip()
+    if not filename:
+        return "Uploaded file is missing a filename."
+    if not filename.lower().endswith(".csv"):
+        return "Please upload a CSV file."
+
+    current_position = file.stream.tell()
+    file.stream.seek(0, os.SEEK_END)
+    size_bytes = file.stream.tell()
+    file.stream.seek(current_position)
+
+    if size_bytes > MAX_UPLOAD_SIZE_BYTES:
+        return (
+            f"File is too large ({round(size_bytes / (1024 * 1024), 1)} MB). "
+            f"Please upload a CSV smaller than {max_upload_size_mb()} MB."
+        )
+    return None
 
 def load_local_env_value(key_name):
     search_paths = [
@@ -684,7 +711,12 @@ def health():
 def get_columns():
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
-    df, read_error = read_csv_upload(request.files["file"], max_rows=MAX_PROFILE_ROWS)
+    file = request.files["file"]
+    file_error = validate_uploaded_file(file)
+    if file_error:
+        return jsonify({"error": file_error}), 400
+
+    df, read_error = read_csv_upload(file, max_rows=MAX_PROFILE_ROWS)
     if read_error:
         return jsonify({"error": read_error}), 400
     recommendations = recommend_columns(df)
@@ -703,8 +735,9 @@ def analyze():
         return jsonify({"error": "No file uploaded"}), 400
 
     file = request.files["file"]
-    if not file.filename.lower().endswith(".csv"):
-        return jsonify({"error": "Please upload a CSV file."}), 400
+    file_error = validate_uploaded_file(file)
+    if file_error:
+        return jsonify({"error": file_error}), 400
 
     df, read_error = read_csv_upload(file, max_rows=MAX_ANALYSIS_ROWS)
     if read_error:
@@ -765,7 +798,12 @@ def fix():
     if "file" not in request.files:
         return jsonify({"error": "No file uploaded"}), 400
 
-    df, read_error = read_csv_upload(request.files["file"], max_rows=MAX_ANALYSIS_ROWS)
+    file = request.files["file"]
+    file_error = validate_uploaded_file(file)
+    if file_error:
+        return jsonify({"error": file_error}), 400
+
+    df, read_error = read_csv_upload(file, max_rows=MAX_ANALYSIS_ROWS)
     if read_error:
         return jsonify({"error": read_error}), 400
 
@@ -808,6 +846,10 @@ def repair():
         return jsonify({"error": "No file uploaded"}), 400
 
     file = request.files["file"]
+    file_error = validate_uploaded_file(file)
+    if file_error:
+        return jsonify({"error": file_error}), 400
+
     df, read_error = read_csv_upload(file, max_rows=MAX_ANALYSIS_ROWS)
     if read_error:
         return jsonify({"error": read_error}), 400
