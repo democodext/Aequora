@@ -200,6 +200,7 @@ code {
   letter-spacing: -0.02em;
   line-height: 1.08;
   max-width: 760px;
+  overflow-wrap: anywhere;
 }
 
 .topbar-status {
@@ -271,7 +272,7 @@ code {
   align-items: end;
   display: grid;
   gap: 14px;
-  grid-template-columns: 1.3fr 1fr 1fr auto;
+  grid-template-columns: minmax(220px, 1.3fr) minmax(180px, 1fr) minmax(180px, 1fr) auto;
   margin-bottom: 18px;
 }
 
@@ -297,6 +298,8 @@ code {
 
 .audit-nav-head strong {
   font-size: 18px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .audit-nav-head small {
@@ -450,6 +453,8 @@ code {
   display: block;
   font-size: 18px;
   margin-bottom: 4px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 label {
@@ -527,6 +532,8 @@ option {
 
 .panel-head h3 {
   font-size: 17px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .column-grid {
@@ -844,6 +851,14 @@ option {
 .chat-bubble p {
   color: #dce7ff;
   line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1280px) {
+  .audit-shell,
+  .control-bar {
+    grid-template-columns: 1fr;
+  }
 }
 
 .chat-form {
