@@ -12,7 +12,11 @@ import {
   Cell
 } from "recharts";
 
-const API_URL = process.env.REACT_APP_API_URL || "http://localhost:5000";
+const API_URL =
+  process.env.REACT_APP_API_URL ||
+  (process.env.NODE_ENV === "production"
+    ? "https://aequora-api.onrender.com"
+    : "http://localhost:5000");
 const api = axios.create({ baseURL: API_URL, timeout: 45000 });
 const chartColors = ["#89a8ff", "#76dbc0", "#f3c97a", "#f49d92", "#a8bbff", "#9fd5ff"];
 
